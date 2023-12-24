@@ -1,11 +1,12 @@
 // src/components/BatteryList.tsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSortAlphaDown,
   faPencilAlt,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { ClipLoader } from 'react-spinners';
 import Button from "./Button";
 import Battery from "../types/battery";
 import UpdateBattriesModal from "../modalbox/LoadBatteriesModal";
@@ -15,6 +16,8 @@ interface BatteryListProps {
   onDelete: (id: string) => void;
   onBatteryUpdated: () => void;
   setBatteries: (batteries: Battery[]) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const BatteryList: React.FC<BatteryListProps> = ({
@@ -22,11 +25,13 @@ const BatteryList: React.FC<BatteryListProps> = ({
   onDelete,
   onBatteryUpdated,
   setBatteries,
+  loading,
+  setLoading,
 }) => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [selectedBattery, setSelectedBattery] = useState<Battery | null>(null);
   const [sortByAlphabet, setSortByAlphabet] = useState(false);
-
+    
   const sortedBatteries = useMemo(() => {
     if (sortByAlphabet) {
       return [...batteries].sort((a, b) => a.name.localeCompare(b.name));
@@ -45,23 +50,30 @@ const BatteryList: React.FC<BatteryListProps> = ({
 
   const handleDelete = (id: string) => {
     // Ask for confirmation before deleting
-    const confirmed = window.confirm("Are you sure you want to delete this battery?");
-    
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this battery?"
+      );
+      setLoading(true);
+
     if (confirmed) {
       // User confirmed, proceed with deletion
       onDelete(id);
     }
+    setLoading(false);
   };
-  
- 
 
   return (
     <div className="container mx-auto my-8 p-4">
-      {batteries.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center h-40">
+          <ClipLoader size={35} color={'#123abc'} loading={loading} />
+          {/* You can replace "Loading..." with an actual spinner component */}
+        </div>
+      ) : batteries.length === 0 ? (
         <div className="text-center text-gray-600 text-xl">
           No batteries found. Please create a new battery.
         </div>
-      ) : (
+      ) :  (
         <>
           <div className="flex items-center mb-4">
             <input

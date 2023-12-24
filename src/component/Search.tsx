@@ -1,5 +1,5 @@
 // src/components/Search.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CiSearch } from "react-icons/ci";
 import Battery from "../types/battery";
 import { deleteBattery, getBatteries } from "../api/battery";
@@ -9,33 +9,56 @@ interface SearchProps {
   batteries: Battery[];
   setBatteries: (batteries: Battery[]) => void;
   onBatteryUpdated: () => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const Search: React.FC<SearchProps> = ({
   batteries,
   setBatteries,
   onBatteryUpdated,
+  loading,
+  setLoading,
 }) => {
   const [search, setSearch] = useState("");
   const [maxPostCode, setMaxPostCode] = useState<number | undefined>();
   const [minPostCode, setMinPostCode] = useState<number | undefined>();
   const [searchIconClicked, setSearchIconClicked] = useState(false);
 
+  // const [loadings, setLoadings] = useState(false);
+
+  useEffect(() => {
+    // console.log("Updated loading state:", loading);
+  }, [loading]);
+
   const handleClick = async () => {
-    if (minPostCode! > maxPostCode!) {
-      alert("Max post code should be greater than min post code");
-      return;
+    setLoading(true);
+    // console.log(loading);
+    try {
+      const data = await getBatteries({ search, maxPostCode, minPostCode });
+      setBatteries([...data] as Battery[]);
+      setSearchIconClicked(true);
+      setLoading(false);
+    } catch (error) {
+      // console.log(loading)
+      // console.error("Error fetching batteries:", error);
     }
-    const data = await getBatteries({ search, maxPostCode, minPostCode });
-    setBatteries([...data] as Battery[]);
-    setSearchIconClicked(true);
   };
 
   const handleDelete = async (id: string) => {
-    await deleteBattery(id);
-    const updatedBatteries = await getBatteries({});
-    setBatteries(updatedBatteries);
-    setSearchIconClicked(true);
+    setLoading(true);
+    try {
+      await deleteBattery(id);
+      const updatedBatteries = await getBatteries({});
+      setBatteries(updatedBatteries);
+      setSearchIconClicked(true);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error deleting battery:", error);
+    }
+    finally{
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,8 +101,9 @@ const Search: React.FC<SearchProps> = ({
           <button
             className="bg-gray-200 rounded-lg px-4 py-2"
             onClick={handleClick}
+            disabled={loading}
           >
-          <CiSearch className="text-blue-500 text-2xl" />
+            <CiSearch className="text-blue-500 text-2xl" />
           </button>
         </div>
       </div>
@@ -90,6 +114,8 @@ const Search: React.FC<SearchProps> = ({
             onDelete={handleDelete}
             onBatteryUpdated={onBatteryUpdated}
             setBatteries={setBatteries}
+            loading={loading}
+            setLoading={setLoading}
           />
         )}
       </div>

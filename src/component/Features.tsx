@@ -1,11 +1,11 @@
 // src/components/Features.tsx
-import React, { useEffect, useState } from 'react';
-import Button from './Button';
-import { getBatteries, deleteBattery, getStatistics } from '../api/battery';
-import Battery from '../types/battery';
-import BatteryList from './BatteryList';
-import Search from './Search';
-import CreateBatteriesModal from '../modalbox/CreateBatteriesModal';
+import React, { useEffect, useState } from "react";
+import Button from "./Button";
+import { getBatteries, deleteBattery, getStatistics } from "../api/battery";
+import Battery from "../types/battery";
+import BatteryList from "./BatteryList";
+import Search from "./Search";
+import CreateBatteriesModal from "../modalbox/CreateBatteriesModal";
 
 interface FeaturesProps {
   setTotalCount: (count: number) => void;
@@ -13,12 +13,16 @@ interface FeaturesProps {
   setTotalWattCapacity: (totalWattCapacity: number) => void;
 }
 
-const Features: React.FC<FeaturesProps> = ({ setTotalCount, setAverageWattCapacity, setTotalWattCapacity }) => {
+const Features: React.FC<FeaturesProps> = ({
+  setTotalCount,
+  setAverageWattCapacity,
+  setTotalWattCapacity,
+}) => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [listClicked, setListClicked] = useState(false);
   const [batteries, setBatteries] = useState<Battery[]>([]);
   const [searchClick, setSearchClick] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (listClicked) {
       fetchBatteries();
@@ -31,12 +35,15 @@ const Features: React.FC<FeaturesProps> = ({ setTotalCount, setAverageWattCapaci
   }, [batteries]);
 
   const onListClick = () => {
+    setLoading(false);
     setListClicked(true);
+    setLoading(false);
     setSearchClick(false);
     // No need to fetchBatteries here, it will be triggered on the next useEffect
   };
 
   const onSearchClick = () => {
+    setLoading(false);
     setSearchClick(true);
     setListClicked(false);
     // No need to fetchBatteries here, it will be triggered on the next useEffect
@@ -44,11 +51,12 @@ const Features: React.FC<FeaturesProps> = ({ setTotalCount, setAverageWattCapaci
 
   const fetchBatteries = async () => {
     if (!searchClick) {
+      setLoading(true);
       const data = await getBatteries({});
       setBatteries(data);
+      setLoading(false);
     }
   };
-  
 
   const fetchTotalCount = async () => {
     try {
@@ -57,7 +65,7 @@ const Features: React.FC<FeaturesProps> = ({ setTotalCount, setAverageWattCapaci
       setAverageWattCapacity(data.averageWattCapacity);
       setTotalWattCapacity(data.totalWattCapacity);
     } catch (error) {
-      console.error('Error fetching statistics:', error);
+      console.error("Error fetching statistics:", error);
     }
   };
 
@@ -88,7 +96,8 @@ const Features: React.FC<FeaturesProps> = ({ setTotalCount, setAverageWattCapaci
           onClick={() => {
             setSearchClick(false);
             setListClicked(true);
-            setOpenCreateModal(true)}}
+            setOpenCreateModal(true);
+          }}
           label="Create"
           buttonClass="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
         />
@@ -104,7 +113,13 @@ const Features: React.FC<FeaturesProps> = ({ setTotalCount, setAverageWattCapaci
           onClick={onSearchClick}
           buttonClass="bg-slate-500 hover.bg-slate-700 text-white font-bold py-2 px-4 rounded"
         />
-        {openCreateModal && <CreateBatteriesModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onBatteryCreated={handleBatteryCreated} />}
+        {openCreateModal && (
+          <CreateBatteriesModal
+            open={openCreateModal}
+            onClose={() => setOpenCreateModal(false)}
+            onBatteryCreated={handleBatteryCreated}
+          />
+        )}
       </div>
       <div className="m-3">
         {searchClick && (
@@ -112,9 +127,20 @@ const Features: React.FC<FeaturesProps> = ({ setTotalCount, setAverageWattCapaci
             batteries={batteries}
             setBatteries={setBatteries}
             onBatteryUpdated={handleBatteryUpdated}
+            loading={loading}
+            setLoading={setLoading}
           />
         )}
-        {listClicked && <BatteryList batteries={batteries} onDelete={handleDelete} onBatteryUpdated={handleBatteryUpdated} setBatteries={setBatteries}/>}
+        {listClicked && (
+          <BatteryList
+            batteries={batteries}
+            onDelete={handleDelete}
+            onBatteryUpdated={handleBatteryUpdated}
+            setBatteries={setBatteries}
+            loading={loading}
+            setLoading={setLoading}
+          />
+        )}
       </div>
     </>
   );

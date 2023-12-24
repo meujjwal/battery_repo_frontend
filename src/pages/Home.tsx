@@ -1,4 +1,3 @@
-// src/components/Home.tsx
 import React, { useState } from 'react';
 import Features from '../component/Features';
 
@@ -24,10 +23,10 @@ export const Home = () => {
 
         <div className="bg-gray-200 p-8 rounded-md shadow-md mt-4">
           <div className="text-xl text-gray-700 mb-4">Battery Statistics:</div>
-          <div className="flex flex-col items-center space-y-4">
-            <div className="text-lg text-gray-800">Total Batteries: {totalCount}</div>
-            <div className="text-lg text-gray-800">Average Watt Capacity: {averageWattCapacity} W</div>
-            <div className="text-lg text-gray-800">Total Watt Capacity: {totalWattCapacity} W</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="text-lg text-gray-800 mb-2">Total Batteries: {totalCount}</div>
+            <div className="text-lg text-gray-800 mb-2">Average Watt Capacity: {averageWattCapacity} W</div>
+            <div className="text-lg text-gray-800 mb-2">Total Watt Capacity: {totalWattCapacity} W</div>
           </div>
         </div>
       </main>
@@ -35,4 +34,4 @@ export const Home = () => {
   );
 };
 
-// export default Home;
+
